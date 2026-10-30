@@ -1,0 +1,11 @@
+{
+  "name": "ultimo-reparto",
+  "version": "4.0.0",
+  "private": true,
+  "description": "Juego de conduccion y entregas con Phaser 3",
+  "scripts": {
+    "start": "node scripts/serve.cjs",
+    "test": "node --test tests/delivery.test.cjs",
+    "check": "node --check mi-primer-juego/src/delivery.js && node --check mi-primer-juego/src/delivery-rules.js && node --check mi-primer-juego/src/delivery-art.js && node --check mi-primer-juego/src/loader.js"
+  }
+}

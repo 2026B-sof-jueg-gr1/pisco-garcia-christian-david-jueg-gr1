@@ -1,0 +1,11 @@
+const test=require('node:test'),assert=require('node:assert/strict'),R=require('../mi-primer-juego/src/delivery-rules.js');
+const v={x:160,y:800,speed:0,angle:-Math.PI/2};
+test('Más carga reduce velocidad y giro',()=>{let light={...v},heavy={...v};for(let i=0;i<300;i++){light=R.step(light,{gas:true,right:true},.016,3);heavy=R.step(heavy,{gas:true,right:true},.016,7);}assert.ok(light.speed>heavy.speed);assert.ok(light.angle>heavy.angle);});
+test('Frenar se detiene sin convertir frenada en reversa',()=>{let p={...v,speed:180};for(let i=0;i<200;i++)p=R.step(p,{brake:true},.016,3);assert.equal(p.speed,0);assert.ok(R.canDeliver({...v,speed:0},R.depot));});
+test('Reversa explícita permite salir de una esquina',()=>{let p={...v};for(let i=0;i<100;i++)p=R.step(p,{reverse:true},.016,3);assert.ok(p.speed<0);assert.ok(p.y>v.y);});
+test('Mantener reversa frena la marcha adelante y luego retrocede',()=>{let p={...v,speed:180};p=R.step(p,{reverse:true},.016,3);assert.ok(p.speed>0&&p.speed<180);for(let i=0;i<160;i++)p=R.step(p,{reverse:true},.016,3);assert.equal(p.speed,-65);});
+test('El freno tiene prioridad sobre la reversa para estacionar',()=>{let p={...v,speed:-50};for(let i=0;i<100;i++)p=R.step(p,{reverse:true,brake:true},.016,3);assert.equal(p.speed,0);});
+test('No se entrega al pasar rápido ni desde lejos',()=>{assert.equal(R.canDeliver({...v,speed:70},R.depot),false);assert.equal(R.canDeliver({...v,x:400},R.depot),false);});
+test('Muros y límites bloquean la moto',()=>{assert.equal(R.collision({x:250,y:250}),true);assert.equal(R.collision({x:160,y:480}),false);assert.equal(R.collision({x:20,y:80}),true);});
+test('Todos los destinos tienen ruta desde el taller',()=>{const q=[[160,800]],seen=new Set(['160,800']);for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const p of [[x+20,y],[x-20,y],[x,y+20],[x,y-20]]){if(seen.has(p.join(','))||R.collision({x:p[0],y:p[1]},18))continue;seen.add(p.join(','));q.push(p);}}for(const stop of R.stops)assert.ok(q.some(([x,y])=>Math.hypot(x-stop.x,y-stop.y)<40),stop.name);});
+test('Tiempo y carga intacta mejoran recompensa',()=>{assert.ok(R.score(60,100,3)>R.score(20,50,3));});
